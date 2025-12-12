@@ -17,29 +17,47 @@ The contrast panel shows what a "dumb" AI would do — just re-explain the answe
 ## Features
 
 ### Interactive Knowledge Graph Visualization
+- **Draggable nodes** - Reposition nodes by dragging them around the canvas
+- **Zoomable canvas** - Use mouse wheel or controls to zoom in/out
 - **Clickable nodes** - Click any node to view detailed information from the Learning Commons data source
+- **Learning Component nodes** - All standards display their associated LCs as connected nodes
+- **Path tracing** - Visual trace from root prerequisite LC through standards to identified gap
 - **Labeled relationships** - Edge labels show relationship types (`buildsTowards`, `supports`) with directional arrows
 - **Color-coded elements**:
-  - Indigo: Standards
-  - Purple: Learning Components
-  - Yellow: Prerequisites
-  - Green: Builds To (future standards)
-  - Red: Identified gaps
+  - Indigo: Standards (current)
+  - Violet: Learning Components
+  - Amber: Prerequisites
+  - Emerald: Future standards (builds to)
+  - Red: Identified gaps and trace path
+  - Orange: Nodes along the prerequisite trace path
 
 ### Glossary Modal
 Click the (?) icon in the Knowledge Graph View to see definitions for:
 - All node types (Standard, Learning Component, Prerequisite, etc.)
 - Relationship types and what they mean
 
+### Wrong Answer Diagnosis
+The demo supports three different wrong answers, each revealing a different misconception:
+
+| Answer | Misconception | Root Prerequisite |
+|--------|--------------|-------------------|
+| **3** | Counted parts but didn't form fraction | 2.G.A.3-LC4: Describing wholes by parts |
+| **1/4** | Selected unshaded portion (figure-ground) | 3.NF.A.1-LC2: Identifying unit fractions |
+| **4/3** | Inverted numerator/denominator | 1.G.A.3-LC4: Describing wholes as fourths |
+
+Each scenario includes:
+- Specific gap identification in the learning components
+- Path trace back to the root prerequisite
+- Targeted follow-up intervention (accessibility-aware visuals)
+
 ### Step-by-Step Demo Flow
-Progress through 7 stages showing how AI reasoning works with knowledge graphs:
-1. Assessment Question
-2. Student Response
-3. Standard Identification
-4. Learning Components
-5. Gap Analysis
-6. Prerequisite Trace
-7. Targeted Intervention
+Progress through 6 stages showing how AI reasoning works with knowledge graphs:
+1. Assessment & Student Response
+2. Standard Identification
+3. Learning Components
+4. Gap Analysis
+5. Prerequisite Trace
+6. Targeted Intervention
 
 ## Data Source
 
@@ -108,6 +126,11 @@ vercel
 │   │   ├── globals.css      # Tailwind + custom animations
 │   │   ├── layout.tsx       # Root layout with metadata
 │   │   └── page.tsx         # Main demo component
+│   ├── components/
+│   │   ├── KnowledgeGraph.tsx   # React Flow graph visualization
+│   │   └── CustomNodes.tsx      # Node components (Standard, LC, etc.)
+│   ├── utils/
+│   │   └── layoutGraph.ts       # d3-force layout algorithm
 │   └── data/
 │       └── demo-data.json   # Extracted Learning Commons data
 ├── scripts/
@@ -134,6 +157,8 @@ vercel
 - **React 19** - UI library
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
+- **React Flow (@xyflow/react)** - Interactive graph visualization
+- **d3-force** - Force-directed graph layout
 - **Vercel** - Deployment
 
 ## Credits
