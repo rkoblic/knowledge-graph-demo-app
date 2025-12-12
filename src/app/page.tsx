@@ -1,7 +1,18 @@
 'use client'
 
 import React, { useState } from 'react'
+import dynamic from 'next/dynamic'
 import demoData from '../data/demo-data.json'
+
+// Dynamic import to avoid SSR issues with React Flow
+const KnowledgeGraph = dynamic(() => import('../components/KnowledgeGraph'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[500px] w-full rounded-lg border border-slate-200 flex items-center justify-center bg-slate-50">
+      <div className="text-slate-400">Loading graph...</div>
+    </div>
+  ),
+})
 
 // Transform the imported data to match our component's expected structure
 const standardData = {
@@ -37,188 +48,6 @@ const steps = [
   { title: "Prerequisite Trace", description: "System finds the root cause" },
   { title: "Targeted Intervention", description: "System generates focused follow-up" }
 ]
-
-interface GraphNodeProps {
-  x: number
-  y: number
-  label: string
-  sublabel?: string
-  type: 'standard' | 'component' | 'prerequisite' | 'future'
-  isActive: boolean
-  isGap?: boolean
-  isAnimating?: boolean
-  onClick?: () => void
-}
-
-const GraphNode: React.FC<GraphNodeProps> = ({
-  x,
-  y,
-  label,
-  sublabel,
-  type,
-  isActive,
-  isGap = false,
-  isAnimating = false,
-  onClick
-}) => {
-  const colors = {
-    standard: { bg: '#6366f1', border: '#4f46e5' },
-    component: { bg: '#a78bfa', border: '#8b5cf6' },
-    prerequisite: { bg: '#fbbf24', border: '#f59e0b' },
-    future: { bg: '#34d399', border: '#10b981' },
-    gap: { bg: '#f87171', border: '#ef4444' }
-  }
-
-  const color = isGap ? colors.gap : colors[type]
-  const bgOpacity = isActive ? 1 : 0.4
-  const textOpacity = isActive ? 1 : 0.7
-  const scale = isAnimating ? 1.1 : 1
-
-  return (
-    <g
-      transform={`translate(${x}, ${y}) scale(${scale})`}
-      style={{ transition: 'all 0.3s ease', cursor: 'pointer' }}
-      onClick={onClick}
-    >
-      <rect
-        x="-60"
-        y="-25"
-        width="120"
-        height="50"
-        rx="8"
-        fill={color.bg}
-        stroke={isAnimating ? '#fff' : color.border}
-        strokeWidth={isAnimating ? 3 : 2}
-        opacity={bgOpacity}
-      />
-      <text
-        textAnchor="middle"
-        y="-5"
-        fill="white"
-        fontSize="12"
-        fontWeight="bold"
-        opacity={textOpacity}
-      >
-        {label}
-      </text>
-      {sublabel && (
-        <text
-          textAnchor="middle"
-          y="12"
-          fill="white"
-          fontSize="9"
-          opacity={textOpacity * 0.9}
-        >
-          {sublabel}
-        </text>
-      )}
-    </g>
-  )
-}
-
-interface GraphEdgeProps {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-  isActive: boolean
-  isAnimating?: boolean
-  label?: string
-  showArrow?: boolean
-}
-
-const GraphEdge: React.FC<GraphEdgeProps> = ({
-  x1,
-  y1,
-  x2,
-  y2,
-  isActive,
-  isAnimating = false,
-  label,
-  showArrow = false
-}) => {
-  const stroke = isAnimating ? '#f87171' : '#94a3b8'
-  const opacity = isActive ? 0.8 : 0.2
-
-  // Calculate midpoint for label
-  const midX = (x1 + x2) / 2
-  const midY = (y1 + y2) / 2
-
-  // Calculate angle for arrow
-  const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI)
-
-  // Shorten line to not overlap with nodes (offset by ~25px from end)
-  const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-  const offsetRatio = 25 / length
-  const adjustedX2 = x2 - (x2 - x1) * offsetRatio
-  const adjustedY2 = y2 - (y2 - y1) * offsetRatio
-
-  // Generate unique ID for this edge's marker
-  const markerId = `arrow-${x1}-${y1}-${x2}-${y2}`.replace(/\./g, '-')
-
-  return (
-    <g style={{ transition: 'all 0.3s ease' }}>
-      {/* Arrow marker definition */}
-      {showArrow && (
-        <defs>
-          <marker
-            id={markerId}
-            markerWidth="10"
-            markerHeight="10"
-            refX="9"
-            refY="3"
-            orient="auto"
-            markerUnits="strokeWidth"
-          >
-            <path
-              d="M0,0 L0,6 L9,3 z"
-              fill={stroke}
-              opacity={opacity}
-            />
-          </marker>
-        </defs>
-      )}
-
-      {/* Line */}
-      <line
-        x1={x1}
-        y1={y1}
-        x2={showArrow ? adjustedX2 : x2}
-        y2={showArrow ? adjustedY2 : y2}
-        stroke={stroke}
-        strokeWidth={isAnimating ? 3 : 2}
-        opacity={opacity}
-        strokeDasharray={isAnimating ? '5,5' : 'none'}
-        markerEnd={showArrow ? `url(#${markerId})` : undefined}
-      />
-
-      {/* Label */}
-      {label && (
-        <g transform={`translate(${midX}, ${midY})`}>
-          <rect
-            x={-label.length * 3 - 4}
-            y={-8}
-            width={label.length * 6 + 8}
-            height={14}
-            rx={3}
-            fill="white"
-            opacity={isActive ? 0.95 : 0.5}
-          />
-          <text
-            textAnchor="middle"
-            y={3}
-            fill={isAnimating ? '#ef4444' : '#64748b'}
-            fontSize="8"
-            fontWeight="500"
-            opacity={isActive ? 1 : 0.5}
-          >
-            {label}
-          </text>
-        </g>
-      )}
-    </g>
-  )
-}
 
 type NodeKey = 'standard' | 'lc1' | 'lc2' | 'prereq1' | 'prereq2' | 'prereq3' | 'future1' | 'future2'
 type WrongAnswer = '3' | '1/4' | '4/3'
@@ -777,198 +606,42 @@ export default function KnowledgeGraphDemo() {
               </button>
             </div>
 
-            <svg viewBox="0 0 400 420" className="w-full h-auto">
-              {/* Edges */}
-              {/* Prerequisites to Standard (buildsTowards) */}
-              <GraphEdge
-                x1={70}
-                y1={90}
-                x2={200}
-                y2={150}
-                isActive={step >= 5}
-                isAnimating={step === 5 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '2.G.A.3'}
-                label="buildsTowards"
-                showArrow={true}
-              />
-              <GraphEdge
-                x1={200}
-                y1={90}
-                x2={200}
-                y2={150}
-                isActive={step >= 5}
-                isAnimating={step === 5 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '1.G.A.3'}
-                label="buildsTowards"
-                showArrow={true}
-              />
-              <GraphEdge
-                x1={330}
-                y1={90}
-                x2={200}
-                y2={150}
-                isActive={step >= 5}
-                label="buildsTowards"
-                showArrow={true}
-              />
+            <KnowledgeGraph
+              step={step}
+              selectedAnswer={selectedAnswer}
+              animatingNode={animatingNode}
+              onNodeClick={(nodeId) => setShowNodeDetail(nodeId)}
+              wrongAnswerScenarios={wrongAnswerScenarios}
+            />
 
-              {/* Standard to Learning Components (supports) */}
-              <GraphEdge
-                x1={60}
-                y1={240}
-                x2={200}
-                y2={190}
-                isActive={step >= 3}
-                isAnimating={step === 3 || step === 4}
-                label="supports"
-                showArrow={true}
-              />
-              <GraphEdge
-                x1={340}
-                y1={240}
-                x2={200}
-                y2={190}
-                isActive={step >= 3}
-                label="supports"
-                showArrow={true}
-              />
+            {/* Legend */}
+            <div className="flex flex-wrap gap-4 mt-4 justify-center text-xs text-slate-500">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-[#fbbf24]"></div>
+                <span>Prerequisites</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-[#6366f1]"></div>
+                <span>Standard</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-[#a78bfa]"></div>
+                <span>Components</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-[#f87171]"></div>
+                <span>Gap</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-[#34d399]"></div>
+                <span>Builds to</span>
+              </div>
+            </div>
 
-              {/* Standard to Future (buildsTowards) */}
-              <GraphEdge
-                x1={200}
-                y1={190}
-                x2={100}
-                y2={330}
-                isActive={step >= 2}
-                label="buildsTowards"
-                showArrow={true}
-              />
-              <GraphEdge
-                x1={200}
-                y1={190}
-                x2={300}
-                y2={330}
-                isActive={step >= 2}
-                label="buildsTowards"
-                showArrow={true}
-              />
-
-              {/* Prerequisite Nodes */}
-              <GraphNode
-                x={70}
-                y={65}
-                label="2.G.A.3"
-                sublabel={selectedAnswer && step >= 5 && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '2.G.A.3'
-                  ? `LC4: Describe whole`
-                  : "Partitioning shapes"}
-                type="prerequisite"
-                isActive={step >= 5}
-                isAnimating={animatingNode === 'prereq' && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '2.G.A.3'}
-                onClick={() => setShowNodeDetail('prereq1')}
-              />
-              <GraphNode
-                x={200}
-                y={65}
-                label="1.G.A.3"
-                sublabel={selectedAnswer && step >= 5 && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '1.G.A.3'
-                  ? `LC4: Four fourths`
-                  : "Halves & fourths"}
-                type="prerequisite"
-                isActive={step >= 5}
-                isAnimating={animatingNode === 'prereq' && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '1.G.A.3'}
-                onClick={() => setShowNodeDetail('prereq2')}
-              />
-              <GraphNode
-                x={330}
-                y={65}
-                label="2.MD.A.2"
-                sublabel="Measurement units"
-                type="prerequisite"
-                isActive={step >= 5}
-                onClick={() => setShowNodeDetail('prereq3')}
-              />
-
-              {/* Main Standard Node */}
-              <GraphNode
-                x={200}
-                y={165}
-                label={standardData.current.code}
-                sublabel="Fractions as parts"
-                type="standard"
-                isActive={step >= 2}
-                isAnimating={animatingNode === 'standard'}
-                onClick={() => setShowNodeDetail('standard')}
-              />
-
-              {/* Learning Component Nodes */}
-              <GraphNode
-                x={60}
-                y={265}
-                label={standardData.learningComponents[0]?.id || 'LC1'}
-                sublabel="Unit fractions (1/b)"
-                type="component"
-                isActive={step >= 3}
-                isGap={step >= 4 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC1'}
-                isAnimating={animatingNode === 'lc1' || animatingNode === 'lc1-gap'}
-                onClick={() => setShowNodeDetail('lc1')}
-              />
-              <GraphNode
-                x={340}
-                y={265}
-                label={standardData.learningComponents[1]?.id || 'LC2'}
-                sublabel="Non-unit fractions (a/b)"
-                type="component"
-                isActive={step >= 3}
-                isGap={step >= 4 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC2'}
-                isAnimating={animatingNode === 'lc2' || animatingNode === 'lc2-gap'}
-                onClick={() => setShowNodeDetail('lc2')}
-              />
-
-              {/* Future Standards */}
-              <GraphNode
-                x={100}
-                y={355}
-                label={standardData.buildsTo[0].code}
-                sublabel="Equivalent fractions"
-                type="future"
-                isActive={step >= 2}
-                onClick={() => setShowNodeDetail('future1')}
-              />
-              <GraphNode
-                x={300}
-                y={355}
-                label={standardData.buildsTo[1].code}
-                sublabel="Fraction operations"
-                type="future"
-                isActive={step >= 2}
-                onClick={() => setShowNodeDetail('future2')}
-              />
-
-              {/* Legend */}
-              <g transform="translate(10, 410)">
-                <rect x="0" y="-15" width="12" height="12" rx="2" fill="#fbbf24" />
-                <text x="18" y="-5" fill="#64748b" fontSize="9">
-                  Prerequisites
-                </text>
-                <rect x="85" y="-15" width="12" height="12" rx="2" fill="#6366f1" />
-                <text x="103" y="-5" fill="#64748b" fontSize="9">
-                  Standard
-                </text>
-                <rect x="155" y="-15" width="12" height="12" rx="2" fill="#a78bfa" />
-                <text x="173" y="-5" fill="#64748b" fontSize="9">
-                  Components
-                </text>
-                <rect x="245" y="-15" width="12" height="12" rx="2" fill="#f87171" />
-                <text x="263" y="-5" fill="#64748b" fontSize="9">
-                  Gap
-                </text>
-                <rect x="295" y="-15" width="12" height="12" rx="2" fill="#34d399" />
-                <text x="313" y="-5" fill="#64748b" fontSize="9">
-                  Builds to
-                </text>
-              </g>
-            </svg>
-
-            {/* Hint to click nodes */}
-            <p className="mt-3 text-xs text-slate-400 text-center">Click any node to view details</p>
+            {/* Hint */}
+            <p className="mt-2 text-xs text-slate-400 text-center">
+              Drag nodes to reposition. Scroll to zoom. Drag canvas to pan.
+            </p>
           </div>
         </div>
 
