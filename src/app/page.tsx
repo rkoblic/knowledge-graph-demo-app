@@ -469,7 +469,7 @@ export default function KnowledgeGraphDemo() {
               <span className="text-sm font-medium text-slate-500">Knowledge Graph View</span>
             </div>
 
-            <svg viewBox="0 0 400 380" className="w-full h-auto">
+            <svg viewBox="0 0 400 420" className="w-full h-auto">
               {/* Edges */}
               {/* Prerequisites to Standard */}
               <GraphEdge
@@ -574,7 +574,7 @@ export default function KnowledgeGraphDemo() {
               />
 
               {/* Legend */}
-              <g transform="translate(10, 380)">
+              <g transform="translate(10, 410)">
                 <rect x="0" y="-15" width="12" height="12" rx="2" fill="#fbbf24" />
                 <text x="18" y="-5" fill="#64748b" fontSize="9">
                   Prerequisites
