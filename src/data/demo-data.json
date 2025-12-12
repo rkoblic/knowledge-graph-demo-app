@@ -65,6 +65,14 @@
     "3.NF.A.1": [
       { "id": "LC1", "description": "Identify a fraction a/b as the quantity formed by a parts of size 1/b" },
       { "id": "LC2", "description": "Identify a fraction 1/b as one part of a partitioned whole" }
+    ],
+    "3.G.A.2": [
+      { "id": "LC1", "description": "Partition shapes into parts with equal areas" },
+      { "id": "LC2", "description": "Express area of each part as a unit fraction of the whole" }
+    ],
+    "3.NF.A.3": [
+      { "id": "LC1", "description": "Explain equivalence of fractions in special cases" },
+      { "id": "LC2", "description": "Compare fractions by reasoning about their size" }
     ]
   },
   "buildsTo": [

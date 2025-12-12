@@ -8,6 +8,8 @@ interface CustomNodeData {
   sublabel?: string
   isActive: boolean
   isGap?: boolean
+  isOnPath?: boolean
+  isRootLC?: boolean
   isAnimating?: boolean
   onClick?: () => void
 }
@@ -27,9 +29,15 @@ function BaseNode({
   data: CustomNodeData
   type: 'standard' | 'component' | 'prerequisite' | 'future'
 }) {
-  const color = data.isGap ? nodeColors.gap : nodeColors[type]
+  // Determine node color: gap/root LC are red, path nodes are orange, else default
+  const isHighlighted = data.isGap || data.isRootLC
+  const isOnPath = data.isOnPath && !isHighlighted
+  const color = isHighlighted ? nodeColors.gap : isOnPath ? '#fb923c' : nodeColors[type]
   const isActive = data.isActive
   const isAnimating = data.isAnimating
+
+  // Path nodes get a ring effect
+  const ringColor = isHighlighted ? '#fecaca' : isOnPath ? '#fed7aa' : 'transparent'
 
   return (
     <div
@@ -48,10 +56,21 @@ function BaseNode({
         className="!bg-transparent !border-0 !w-1 !h-1"
       />
 
+      {/* Outer ring for path nodes */}
+      {(isHighlighted || isOnPath) && (
+        <div
+          className="absolute -inset-1 rounded-full transition-all duration-300"
+          style={{
+            backgroundColor: ringColor,
+            opacity: 0.5,
+          }}
+        />
+      )}
+
       {/* Small circle node */}
       <div
         className={`
-          w-3 h-3 rounded-full
+          relative w-3 h-3 rounded-full
           transition-all duration-300 ease-out
           ${isAnimating ? 'scale-150' : 'scale-100'}
         `}
@@ -59,7 +78,7 @@ function BaseNode({
           backgroundColor: color,
           opacity: isActive ? 1 : 0.4,
           boxShadow: isActive
-            ? `0 0 ${isAnimating ? '12px' : '8px'} ${color}`
+            ? `0 0 ${isAnimating ? '12px' : isHighlighted || isOnPath ? '10px' : '8px'} ${color}`
             : 'none',
         }}
       />
@@ -69,11 +88,17 @@ function BaseNode({
         className="absolute left-5 top-1/2 -translate-y-1/2 whitespace-nowrap pointer-events-none"
         style={{ opacity: isActive ? 1 : 0.5 }}
       >
-        <div className="text-xs font-medium text-slate-700">
+        <div
+          className="text-xs font-medium"
+          style={{ color: isHighlighted ? '#dc2626' : isOnPath ? '#ea580c' : '#334155' }}
+        >
           {data.label}
         </div>
         {data.sublabel && (
-          <div className="text-[10px] text-slate-500">
+          <div
+            className="text-[10px]"
+            style={{ color: isHighlighted ? '#f87171' : isOnPath ? '#fb923c' : '#64748b' }}
+          >
             {data.sublabel}
           </div>
         )}

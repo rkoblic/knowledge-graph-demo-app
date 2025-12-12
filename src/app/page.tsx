@@ -48,7 +48,8 @@ const steps = [
   { title: "Targeted Intervention", description: "System generates focused follow-up" }
 ]
 
-type NodeKey = 'standard' | 'lc1' | 'lc2' | 'prereq1' | 'prereq2' | 'prereq3' | 'future1' | 'future2'
+// Node IDs are now dynamic (e.g., prereq1-lc1, standard-lc2, future1-lc1)
+type NodeKey = string
 type WrongAnswer = '3' | '1/4' | '4/3'
 
 // Wrong answer scenarios - each wrong answer reveals a different misconception
@@ -85,8 +86,8 @@ const wrongAnswerScenarios: Record<WrongAnswer, {
       lcId: 'LC2',
       lcDescription: 'Identify a fraction 1/b as one part of a partitioned whole'
     },
-    followUpPrompt: 'Point to the part that shows 1/4. Now count: how many fourths are shaded in total?',
-    followUpTargetSkill: 'Distinguishing unit vs non-unit fractions'
+    followUpPrompt: "A box has 5 marbles: 2 are solid and 3 are striped. What fraction of the marbles are SOLID?",
+    followUpTargetSkill: 'Identifying which attribute the question asks about'
   },
   '4/3': {
     gapLC: 'LC1',
@@ -97,8 +98,8 @@ const wrongAnswerScenarios: Record<WrongAnswer, {
       lcId: 'LC4',
       lcDescription: 'Describe a whole as four quarters or four fourths'
     },
-    followUpPrompt: "Let's name the parts. The rectangle is cut into 4 equal pieces. What do we call each piece? If I shade three pieces, how many fourths have I shaded?",
-    followUpTargetSkill: 'Connecting "fourths" terminology to denominator'
+    followUpPrompt: "Here's a pizza cut into 2 equal slices. If you eat 1 slice, you ate 1/2 of the pizza. The bottom number tells us how many slices the pizza was cut into. Now imagine a pizza cut into 4 equal slices. If you eat 1 slice, what fraction of the pizza did you eat?",
+    followUpTargetSkill: 'Understanding that denominator represents total equal parts'
   }
 }
 
@@ -239,43 +240,59 @@ const FollowUpVisual: React.FC<{ answerType: WrongAnswer }> = ({ answerType }) =
   }
 
   if (answerType === '1/4') {
-    // Visual highlighting the 1/4 (unshaded) vs counting shaded fourths
+    // Marbles visual - 2 solid, 3 striped, asking about SOLID
+    // Uses pattern + color for accessibility (color blindness)
     return (
-      <svg width="200" height="100" viewBox="0 0 200 100">
-        {/* Rectangles */}
-        <rect x="10" y="20" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
-        <rect x="55" y="20" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
-        <rect x="100" y="20" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
-        <rect x="145" y="20" width="40" height="40" fill="transparent" stroke="#ef4444" strokeWidth="3" strokeDasharray="4,2" />
-        {/* Arrow pointing to unshaded part */}
-        <text x="165" y="12" fill="#ef4444" fontSize="9" fontWeight="bold" textAnchor="middle">← This is 1/4</text>
-        {/* Labels under shaded parts */}
-        <text x="30" y="75" fill="#34d399" fontSize="9" textAnchor="middle">1/4</text>
-        <text x="75" y="75" fill="#34d399" fontSize="9" textAnchor="middle">1/4</text>
-        <text x="120" y="75" fill="#34d399" fontSize="9" textAnchor="middle">1/4</text>
-        {/* Bottom instruction */}
-        <text x="100" y="92" fill="#34d399" fontSize="10" fontWeight="bold" textAnchor="middle">How many fourths are shaded?</text>
+      <svg width="240" height="80" viewBox="0 0 240 80">
+        <defs>
+          {/* Stripe pattern for distinction */}
+          <pattern id="stripes" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="6" stroke="#60a5fa" strokeWidth="3" />
+          </pattern>
+        </defs>
+        {/* 5 marbles in a row */}
+        {/* Solid marbles (orange - good contrast) */}
+        <circle cx="40" cy="35" r="18" fill="#f97316" stroke="#c2410c" strokeWidth="2" />
+        <circle cx="80" cy="35" r="18" fill="#f97316" stroke="#c2410c" strokeWidth="2" />
+        {/* Striped marbles */}
+        <circle cx="120" cy="35" r="18" fill="url(#stripes)" stroke="#2563eb" strokeWidth="2" />
+        <circle cx="160" cy="35" r="18" fill="url(#stripes)" stroke="#2563eb" strokeWidth="2" />
+        <circle cx="200" cy="35" r="18" fill="url(#stripes)" stroke="#2563eb" strokeWidth="2" />
+        {/* Labels with icons */}
+        <text x="60" y="70" fill="#c2410c" fontSize="10" fontWeight="bold" textAnchor="middle">solid</text>
+        <text x="160" y="70" fill="#2563eb" fontSize="10" fontWeight="bold" textAnchor="middle">striped</text>
       </svg>
     )
   }
 
   if (answerType === '4/3') {
-    // Visual emphasizing "fourths" terminology
+    // Pizza visual - worked example with 2 slices, then question about 4 slices
     return (
-      <svg width="220" height="110" viewBox="0 0 220 110">
-        {/* Original shape with labels */}
-        <rect x="10" y="10" width="40" height="35" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
-        <rect x="55" y="10" width="40" height="35" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
-        <rect x="100" y="10" width="40" height="35" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
-        <rect x="145" y="10" width="40" height="35" fill="transparent" stroke="#6366f1" strokeWidth="2" />
-        {/* Labels under each piece */}
-        <text x="30" y="60" fill="#f59e0b" fontSize="9" fontWeight="bold" textAnchor="middle">1 fourth</text>
-        <text x="75" y="60" fill="#f59e0b" fontSize="9" fontWeight="bold" textAnchor="middle">1 fourth</text>
-        <text x="120" y="60" fill="#f59e0b" fontSize="9" fontWeight="bold" textAnchor="middle">1 fourth</text>
-        <text x="165" y="60" fill="#94a3b8" fontSize="9" textAnchor="middle">1 fourth</text>
-        {/* Bottom text */}
-        <text x="110" y="80" fill="#64748b" fontSize="10" textAnchor="middle">4 equal pieces = 4 fourths</text>
-        <text x="110" y="95" fill="#34d399" fontSize="10" fontWeight="bold" textAnchor="middle">3 shaded = 3 fourths = 3/4</text>
+      <svg width="280" height="100" viewBox="0 0 280 100">
+        {/* Pizza 1: Cut into 2 slices, 1 eaten */}
+        <circle cx="50" cy="50" r="38" fill="#fde68a" stroke="#f59e0b" strokeWidth="2" />
+        <line x1="50" y1="12" x2="50" y2="88" stroke="#f59e0b" strokeWidth="2" />
+        {/* Left slice "eaten" - shown as empty/lighter */}
+        <path d="M 50 50 L 50 12 A 38 38 0 0 0 50 88 Z" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2" />
+        {/* Bite marks to show eaten */}
+        <text x="30" y="50" fill="#d97706" fontSize="10" textAnchor="middle">eaten</text>
+        <text x="50" y="98" fill="#64748b" fontSize="9" textAnchor="middle">You ate 1/2</text>
+
+        {/* Arrow between */}
+        <text x="115" y="55" fill="#64748b" fontSize="16">→</text>
+
+        {/* Pizza 2: Cut into 4 slices, 1 eaten */}
+        <circle cx="180" cy="50" r="38" fill="#fde68a" stroke="#f59e0b" strokeWidth="2" />
+        <line x1="180" y1="12" x2="180" y2="88" stroke="#f59e0b" strokeWidth="2" />
+        <line x1="142" y1="50" x2="218" y2="50" stroke="#f59e0b" strokeWidth="2" />
+        {/* Top-left slice "eaten" */}
+        <path d="M 180 50 L 180 12 A 38 38 0 0 0 142 50 Z" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2" />
+        <text x="158" y="35" fill="#d97706" fontSize="8" textAnchor="middle">eaten</text>
+        <text x="180" y="98" fill="#34d399" fontSize="9" fontWeight="bold" textAnchor="middle">You ate ?</text>
+
+        {/* Labels */}
+        <text x="50" y="8" fill="#64748b" fontSize="8" textAnchor="middle">2 slices</text>
+        <text x="180" y="8" fill="#64748b" fontSize="8" textAnchor="middle">4 slices</text>
       </svg>
     )
   }
