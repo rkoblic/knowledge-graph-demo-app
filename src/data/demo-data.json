@@ -23,22 +23,50 @@
   ],
   "prerequisites": [
     {
-      "code": "2.MD.A.2",
-      "description": "Measure the length of an object twice, using length units of different lengths for the two measurements; describe how the two measurements relate to the size of the unit chosen.",
-      "grade": "2",
-      "identifier": "a1310b6d-2e79-5226-9bf9-03c16ac02af5",
-      "caseIdentifierUUID": "6b9d2bdf-d7cc-11e8-824f-0242ac160002",
-      "isRoot": false
-    },
-    {
       "code": "2.G.A.3",
       "description": "Partition circles and rectangles into two, three, or four equal shares, describe the shares using the words halves, thirds, half of, a third of, etc., and describe the whole as two halves, three thirds, four fourths. Recognize that equal shares of identical wholes need not have the same shape.",
       "grade": "2",
       "identifier": "50aa6eb6-7f6b-5286-80d9-67e719722c54",
       "caseIdentifierUUID": "6b9e11e8-d7cc-11e8-824f-0242ac160002",
       "isRoot": true
+    },
+    {
+      "code": "1.G.A.3",
+      "description": "Partition circles and rectangles into two and four equal shares, describe the shares using the words halves, fourths, and quarters. Describe the whole as two of, or four of the shares.",
+      "grade": "1",
+      "identifier": "1ga3-demo-identifier",
+      "caseIdentifierUUID": "1ga3-demo-case-uuid",
+      "isRoot": false
+    },
+    {
+      "code": "2.MD.A.2",
+      "description": "Measure the length of an object twice, using length units of different lengths for the two measurements; describe how the two measurements relate to the size of the unit chosen.",
+      "grade": "2",
+      "identifier": "a1310b6d-2e79-5226-9bf9-03c16ac02af5",
+      "caseIdentifierUUID": "6b9d2bdf-d7cc-11e8-824f-0242ac160002",
+      "isRoot": false
     }
   ],
+  "prerequisiteLearningComponents": {
+    "2.G.A.3": [
+      { "id": "LC1", "description": "Partition objects into two equal shares using 'halves'" },
+      { "id": "LC2", "description": "Partition objects into three equal shares using 'thirds'" },
+      { "id": "LC3", "description": "Partition objects into four equal shares using 'fourths'" },
+      { "id": "LC4", "description": "Describe a whole based on its number of parts (two halves, three thirds, four fourths)" },
+      { "id": "LC5", "description": "Recognize that equal shares need not have the same shape" }
+    ],
+    "1.G.A.3": [
+      { "id": "LC1", "description": "Partition into two equal shares, describe using 'halves'" },
+      { "id": "LC2", "description": "Partition into four equal shares, describe using 'fourths' and 'quarters'" },
+      { "id": "LC3", "description": "Describe a whole as two halves" },
+      { "id": "LC4", "description": "Describe a whole as four quarters or four fourths" },
+      { "id": "LC5", "description": "Recognize that more shares = smaller shares" }
+    ],
+    "3.NF.A.1": [
+      { "id": "LC1", "description": "Identify a fraction a/b as the quantity formed by a parts of size 1/b" },
+      { "id": "LC2", "description": "Identify a fraction 1/b as one part of a partitioned whole" }
+    ]
+  },
   "buildsTo": [
     {
       "code": "3.G.A.2",

@@ -220,7 +220,59 @@ const GraphEdge: React.FC<GraphEdgeProps> = ({
   )
 }
 
-type NodeKey = 'standard' | 'lc1' | 'lc2' | 'prereq1' | 'prereq2' | 'future1' | 'future2'
+type NodeKey = 'standard' | 'lc1' | 'lc2' | 'prereq1' | 'prereq2' | 'prereq3' | 'future1' | 'future2'
+type WrongAnswer = '3' | '1/4' | '4/3'
+
+// Wrong answer scenarios - each wrong answer reveals a different misconception
+const wrongAnswerScenarios: Record<WrongAnswer, {
+  gapLC: 'LC1' | 'LC2'
+  gapDescription: string
+  gapExplanation: string
+  rootPrerequisite: {
+    code: string
+    lcId: string
+    lcDescription: string
+  }
+  followUpPrompt: string
+  followUpTargetSkill: string
+}> = {
+  '3': {
+    gapLC: 'LC1',
+    gapDescription: '3.NF.A.1-LC1 — Understanding unit fractions',
+    gapExplanation: "Student counted shaded parts (3) but didn't express as fraction of whole",
+    rootPrerequisite: {
+      code: '2.G.A.3',
+      lcId: 'LC4',
+      lcDescription: 'Describe a whole based on its number of parts'
+    },
+    followUpPrompt: 'This rectangle is divided into equal parts. How many equal parts make up the whole rectangle?',
+    followUpTargetSkill: 'Recognizing the whole as composed of equal parts'
+  },
+  '1/4': {
+    gapLC: 'LC2',
+    gapDescription: '3.NF.A.1-LC2 — Non-unit fractions (a/b)',
+    gapExplanation: 'Student selected the fraction representing the unshaded part — possible misread or figure-ground confusion',
+    rootPrerequisite: {
+      code: '3.NF.A.1',
+      lcId: 'LC2',
+      lcDescription: 'Identify a fraction 1/b as one part of a partitioned whole'
+    },
+    followUpPrompt: 'Point to the part that shows 1/4. Now count: how many fourths are shaded in total?',
+    followUpTargetSkill: 'Distinguishing unit vs non-unit fractions'
+  },
+  '4/3': {
+    gapLC: 'LC1',
+    gapDescription: '3.NF.A.1-LC1 — Weak grasp that denominator = "parts that make the whole"',
+    gapExplanation: "Student knows it's a fraction but inverted numerator/denominator — doesn't connect 'fourths' to denominator",
+    rootPrerequisite: {
+      code: '1.G.A.3',
+      lcId: 'LC4',
+      lcDescription: 'Describe a whole as four quarters or four fourths'
+    },
+    followUpPrompt: "Let's name the parts. The rectangle is cut into 4 equal pieces. What do we call each piece? If I shade three pieces, how many fourths have I shaded?",
+    followUpTargetSkill: 'Connecting "fourths" terminology to denominator'
+  }
+}
 
 // Glossary definitions for knowledge graph elements
 const glossaryData = {
@@ -299,21 +351,30 @@ const nodeDetails: Record<NodeKey, {
   },
   prereq1: {
     type: 'prerequisite',
-    code: demoData.prerequisites.find(p => p.isRoot)?.code || demoData.prerequisites[0].code,
-    grade: demoData.prerequisites.find(p => p.isRoot)?.grade || demoData.prerequisites[0].grade,
+    code: demoData.prerequisites[0].code, // 2.G.A.3
+    grade: demoData.prerequisites[0].grade,
     subject: 'Mathematics',
-    description: demoData.prerequisites.find(p => p.isRoot)?.description || demoData.prerequisites[0].description,
+    description: demoData.prerequisites[0].description,
     jurisdiction: 'Multi-State (CCSS)',
-    identifier: demoData.prerequisites.find(p => p.isRoot)?.identifier || demoData.prerequisites[0].identifier
+    identifier: demoData.prerequisites[0].identifier
   },
   prereq2: {
     type: 'prerequisite',
-    code: demoData.prerequisites.find(p => !p.isRoot)?.code || demoData.prerequisites[1]?.code,
-    grade: demoData.prerequisites.find(p => !p.isRoot)?.grade || demoData.prerequisites[1]?.grade,
+    code: demoData.prerequisites[1].code, // 1.G.A.3
+    grade: demoData.prerequisites[1].grade,
     subject: 'Mathematics',
-    description: demoData.prerequisites.find(p => !p.isRoot)?.description || demoData.prerequisites[1]?.description,
+    description: demoData.prerequisites[1].description,
     jurisdiction: 'Multi-State (CCSS)',
-    identifier: demoData.prerequisites.find(p => !p.isRoot)?.identifier || demoData.prerequisites[1]?.identifier
+    identifier: demoData.prerequisites[1].identifier
+  },
+  prereq3: {
+    type: 'prerequisite',
+    code: demoData.prerequisites[2].code, // 2.MD.A.2
+    grade: demoData.prerequisites[2].grade,
+    subject: 'Mathematics',
+    description: demoData.prerequisites[2].description,
+    jurisdiction: 'Multi-State (CCSS)',
+    identifier: demoData.prerequisites[2].identifier
   },
   future1: {
     type: 'future',
@@ -335,12 +396,72 @@ const nodeDetails: Record<NodeKey, {
   }
 }
 
+// Follow-up visual component - shows different SVGs based on the misconception
+const FollowUpVisual: React.FC<{ answerType: WrongAnswer }> = ({ answerType }) => {
+  if (answerType === '3') {
+    // Rectangle with dashed partitions - focuses on counting equal parts
+    return (
+      <svg width="200" height="60" viewBox="0 0 200 60">
+        <rect x="10" y="10" width="180" height="40" fill="transparent" stroke="#34d399" strokeWidth="2" />
+        <line x1="55" y1="10" x2="55" y2="50" stroke="#34d399" strokeWidth="2" strokeDasharray="4,2" />
+        <line x1="100" y1="10" x2="100" y2="50" stroke="#34d399" strokeWidth="2" strokeDasharray="4,2" />
+        <line x1="145" y1="10" x2="145" y2="50" stroke="#34d399" strokeWidth="2" strokeDasharray="4,2" />
+      </svg>
+    )
+  }
+
+  if (answerType === '1/4') {
+    // Visual highlighting the 1/4 (unshaded) vs counting shaded fourths
+    return (
+      <svg width="200" height="100" viewBox="0 0 200 100">
+        {/* Rectangles */}
+        <rect x="10" y="20" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+        <rect x="55" y="20" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+        <rect x="100" y="20" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+        <rect x="145" y="20" width="40" height="40" fill="transparent" stroke="#ef4444" strokeWidth="3" strokeDasharray="4,2" />
+        {/* Arrow pointing to unshaded part */}
+        <text x="165" y="12" fill="#ef4444" fontSize="9" fontWeight="bold" textAnchor="middle">← This is 1/4</text>
+        {/* Labels under shaded parts */}
+        <text x="30" y="75" fill="#34d399" fontSize="9" textAnchor="middle">1/4</text>
+        <text x="75" y="75" fill="#34d399" fontSize="9" textAnchor="middle">1/4</text>
+        <text x="120" y="75" fill="#34d399" fontSize="9" textAnchor="middle">1/4</text>
+        {/* Bottom instruction */}
+        <text x="100" y="92" fill="#34d399" fontSize="10" fontWeight="bold" textAnchor="middle">How many fourths are shaded?</text>
+      </svg>
+    )
+  }
+
+  if (answerType === '4/3') {
+    // Visual emphasizing "fourths" terminology
+    return (
+      <svg width="220" height="110" viewBox="0 0 220 110">
+        {/* Original shape with labels */}
+        <rect x="10" y="10" width="40" height="35" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+        <rect x="55" y="10" width="40" height="35" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+        <rect x="100" y="10" width="40" height="35" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+        <rect x="145" y="10" width="40" height="35" fill="transparent" stroke="#6366f1" strokeWidth="2" />
+        {/* Labels under each piece */}
+        <text x="30" y="60" fill="#f59e0b" fontSize="9" fontWeight="bold" textAnchor="middle">1 fourth</text>
+        <text x="75" y="60" fill="#f59e0b" fontSize="9" fontWeight="bold" textAnchor="middle">1 fourth</text>
+        <text x="120" y="60" fill="#f59e0b" fontSize="9" fontWeight="bold" textAnchor="middle">1 fourth</text>
+        <text x="165" y="60" fill="#94a3b8" fontSize="9" textAnchor="middle">1 fourth</text>
+        {/* Bottom text */}
+        <text x="110" y="80" fill="#64748b" fontSize="10" textAnchor="middle">4 equal pieces = 4 fourths</text>
+        <text x="110" y="95" fill="#34d399" fontSize="10" fontWeight="bold" textAnchor="middle">3 shaded = 3 fourths = 3/4</text>
+      </svg>
+    )
+  }
+
+  return null
+}
+
 export default function KnowledgeGraphDemo() {
   const [step, setStep] = useState(0)
   const [selectedNode, setSelectedNode] = useState<NodeKey | null>(null)
   const [animatingNode, setAnimatingNode] = useState<string | null>(null)
   const [showGlossary, setShowGlossary] = useState(false)
   const [showNodeDetail, setShowNodeDetail] = useState<NodeKey | null>(null)
+  const [selectedAnswer, setSelectedAnswer] = useState<WrongAnswer | null>(null)
 
   const advanceStep = () => {
     if (step < steps.length - 1) {
@@ -358,7 +479,12 @@ export default function KnowledgeGraphDemo() {
           setTimeout(() => setAnimatingNode(null), 500)
         }, 500)
       } else if (nextStep === 4) {
-        setAnimatingNode('lc1-gap')
+        // Animate the gap LC based on selected answer
+        if (selectedAnswer && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC2') {
+          setAnimatingNode('lc2-gap')
+        } else {
+          setAnimatingNode('lc1-gap')
+        }
       } else if (nextStep === 5) {
         setAnimatingNode('prereq')
       }
@@ -369,6 +495,7 @@ export default function KnowledgeGraphDemo() {
     setStep(0)
     setSelectedNode(null)
     setAnimatingNode(null)
+    setSelectedAnswer(null)
   }
 
   const getNodeDescription = (node: NodeKey): { title: string; description: string } => {
@@ -379,19 +506,23 @@ export default function KnowledgeGraphDemo() {
       },
       lc1: {
         title: 'Learning Component 1',
-        description: standardData.learningComponents[1].description
+        description: standardData.learningComponents[0].description
       },
       lc2: {
         title: 'Learning Component 2',
-        description: standardData.learningComponents[0].description
+        description: standardData.learningComponents[1].description
       },
       prereq1: {
-        title: `Prerequisite ${standardData.prerequisites.find(p => p.isRoot)?.code || standardData.prerequisites[0].code} (Grade ${standardData.prerequisites.find(p => p.isRoot)?.grade || standardData.prerequisites[0].grade})`,
-        description: standardData.prerequisites.find(p => p.isRoot)?.description || standardData.prerequisites[0].description
+        title: `Prerequisite 2.G.A.3 (Grade 2)`,
+        description: standardData.prerequisites[0].description
       },
       prereq2: {
-        title: `Prerequisite ${standardData.prerequisites.find(p => !p.isRoot)?.code || standardData.prerequisites[1]?.code} (Grade ${standardData.prerequisites.find(p => !p.isRoot)?.grade || standardData.prerequisites[1]?.grade})`,
-        description: standardData.prerequisites.find(p => !p.isRoot)?.description || standardData.prerequisites[1]?.description
+        title: `Prerequisite 1.G.A.3 (Grade 1)`,
+        description: standardData.prerequisites[1].description
+      },
+      prereq3: {
+        title: `Prerequisite 2.MD.A.2 (Grade 2)`,
+        description: standardData.prerequisites[2].description
       },
       future1: {
         title: `Builds To: ${standardData.buildsTo[0].code} (Grade ${standardData.buildsTo[0].grade})`,
@@ -457,27 +588,55 @@ export default function KnowledgeGraphDemo() {
                   </svg>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
-                  {['1/4', '3/4', '3', '4/3'].map((opt) => (
-                    <div
-                      key={opt}
-                      className={`p-2 rounded text-center text-sm ${
-                        opt === '3' && step >= 1
-                          ? 'bg-red-50 border-2 border-red-400 text-red-700'
-                          : 'bg-white border border-slate-300 text-slate-600'
-                      }`}
-                    >
-                      {opt}
-                      {opt === '3' && step >= 1 && (
-                        <div className="text-xs text-red-500 mt-1">Student&apos;s answer</div>
-                      )}
-                    </div>
-                  ))}
+                  {['1/4', '3/4', '3', '4/3'].map((opt) => {
+                    const isCorrectAnswer = opt === '3/4'
+                    const isWrongAnswer = opt !== '3/4'
+                    const isSelected = selectedAnswer === opt
+                    const canSelect = isWrongAnswer && step <= 1
+
+                    return (
+                      <button
+                        key={opt}
+                        onClick={() => {
+                          if (canSelect) {
+                            setSelectedAnswer(opt as WrongAnswer)
+                            if (step === 0) {
+                              setStep(1)
+                            }
+                          }
+                        }}
+                        disabled={!canSelect}
+                        className={`p-2 rounded text-center text-sm transition-all ${
+                          isSelected
+                            ? 'bg-red-50 border-2 border-red-400 text-red-700 shadow-sm'
+                            : isCorrectAnswer
+                            ? 'bg-emerald-50 border border-emerald-300 text-emerald-700'
+                            : canSelect
+                            ? 'bg-white border border-slate-300 text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer'
+                            : 'bg-white border border-slate-300 text-slate-600'
+                        }`}
+                      >
+                        {opt}
+                        {isCorrectAnswer && (
+                          <div className="text-xs text-emerald-500 mt-1">Correct</div>
+                        )}
+                        {isSelected && step >= 1 && (
+                          <div className="text-xs text-red-500 mt-1">Student&apos;s answer</div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
+                {step === 0 && !selectedAnswer && (
+                  <p className="text-xs text-indigo-500 mt-3 text-center animate-pulse">
+                    Click a wrong answer to see how the knowledge graph diagnoses the misconception
+                  </p>
+                )}
               </div>
             </div>
 
             {/* AI Reasoning Panel */}
-            {step >= 2 && (
+            {step >= 2 && selectedAnswer && (
               <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 rounded-full bg-violet-500"></div>
@@ -510,8 +669,12 @@ export default function KnowledgeGraphDemo() {
                       <div>
                         <p className="text-slate-700">Breaking into learning components...</p>
                         <ul className="text-slate-400 text-xs mt-1 space-y-1">
-                          <li>• LC1: Identify 1/b as one part of b equal parts</li>
-                          <li>• LC2: Identify a/b as a parts of size 1/b</li>
+                          <li className={wrongAnswerScenarios[selectedAnswer].gapLC === 'LC1' ? 'text-red-400 font-medium' : ''}>
+                            • LC1: Identify 1/b as one part of b equal parts
+                          </li>
+                          <li className={wrongAnswerScenarios[selectedAnswer].gapLC === 'LC2' ? 'text-red-400 font-medium' : ''}>
+                            • LC2: Identify a/b as a parts of size 1/b
+                          </li>
                         </ul>
                       </div>
                     </div>
@@ -524,10 +687,10 @@ export default function KnowledgeGraphDemo() {
                       <div>
                         <p className="text-slate-700">
                           Gap identified:{' '}
-                          <span className="text-red-500">LC1 - Understanding unit fractions</span>
+                          <span className="text-red-500">{wrongAnswerScenarios[selectedAnswer].gapDescription}</span>
                         </p>
                         <p className="text-slate-400 text-xs mt-1">
-                          Student counted shaded parts (3) but didn&apos;t express as fraction of whole
+                          {wrongAnswerScenarios[selectedAnswer].gapExplanation}
                         </p>
                       </div>
                     </div>
@@ -540,10 +703,12 @@ export default function KnowledgeGraphDemo() {
                       <div>
                         <p className="text-slate-700">
                           Root prerequisite:{' '}
-                          <span className="text-amber-600 font-mono">2.G.A.3</span>
+                          <span className="text-amber-600 font-mono">
+                            {wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code}-{wrongAnswerScenarios[selectedAnswer].rootPrerequisite.lcId}
+                          </span>
                         </p>
                         <p className="text-slate-400 text-xs mt-1">
-                          Partitioning shapes into equal shares and using fraction language
+                          {wrongAnswerScenarios[selectedAnswer].rootPrerequisite.lcDescription}
                         </p>
                       </div>
                     </div>
@@ -553,7 +718,7 @@ export default function KnowledgeGraphDemo() {
             )}
 
             {/* Follow-up Question */}
-            {step >= 6 && (
+            {step >= 6 && selectedAnswer && (
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200 shadow-sm animate-fadeIn">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -562,61 +727,22 @@ export default function KnowledgeGraphDemo() {
                   </span>
                 </div>
                 <div className="bg-white/70 rounded-lg p-4">
-                  <p className="text-lg mb-3 text-slate-700">Let&apos;s think about this rectangle together.</p>
+                  <p className="text-lg mb-3 text-slate-700">Let&apos;s think about this together.</p>
                   <div className="flex justify-center mb-3">
-                    <svg width="200" height="60" viewBox="0 0 200 60">
-                      <rect
-                        x="10"
-                        y="10"
-                        width="180"
-                        height="40"
-                        fill="transparent"
-                        stroke="#34d399"
-                        strokeWidth="2"
-                      />
-                      <line
-                        x1="55"
-                        y1="10"
-                        x2="55"
-                        y2="50"
-                        stroke="#34d399"
-                        strokeWidth="2"
-                        strokeDasharray="4,2"
-                      />
-                      <line
-                        x1="100"
-                        y1="10"
-                        x2="100"
-                        y2="50"
-                        stroke="#34d399"
-                        strokeWidth="2"
-                        strokeDasharray="4,2"
-                      />
-                      <line
-                        x1="145"
-                        y1="10"
-                        x2="145"
-                        y2="50"
-                        stroke="#34d399"
-                        strokeWidth="2"
-                        strokeDasharray="4,2"
-                      />
-                    </svg>
+                    <FollowUpVisual answerType={selectedAnswer} />
                   </div>
-                  <p className="text-slate-600 mb-2">This rectangle is divided into equal parts.</p>
                   <p className="text-emerald-600 font-medium">
-                    How many equal parts make up the whole rectangle?
+                    {wrongAnswerScenarios[selectedAnswer].followUpPrompt}
                   </p>
                   <p className="text-slate-400 text-xs mt-3 italic">
-                    This question targets the prerequisite understanding: seeing the whole as
-                    composed of equal parts before naming the fraction.
+                    This question targets: {wrongAnswerScenarios[selectedAnswer].followUpTargetSkill}
                   </p>
                 </div>
               </div>
             )}
 
             {/* Contrast Box */}
-            {step >= 6 && (
+            {step >= 6 && selectedAnswer && (
               <div className="bg-slate-100 rounded-xl p-4 border border-slate-200">
                 <p className="text-sm text-slate-500 mb-2">Compare: Without knowledge graph</p>
                 <div className="bg-white rounded p-3 text-sm text-slate-500 border border-slate-200">
@@ -624,7 +750,7 @@ export default function KnowledgeGraphDemo() {
                   whole. 3 parts are shaded out of 4 total parts, so the fraction is 3/4.&quot;
                 </div>
                 <p className="text-xs text-slate-400 mt-2 italic">
-                  Generic re-explanation doesn&apos;t address why the student answered &quot;3&quot; instead of
+                  Generic re-explanation doesn&apos;t address why the student answered &quot;{selectedAnswer}&quot; instead of
                   &quot;3/4&quot;
                 </p>
               </div>
@@ -655,17 +781,27 @@ export default function KnowledgeGraphDemo() {
               {/* Edges */}
               {/* Prerequisites to Standard (buildsTowards) */}
               <GraphEdge
-                x1={100}
+                x1={70}
                 y1={90}
                 x2={200}
                 y2={150}
                 isActive={step >= 5}
-                isAnimating={step === 5}
+                isAnimating={step === 5 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '2.G.A.3'}
                 label="buildsTowards"
                 showArrow={true}
               />
               <GraphEdge
-                x1={300}
+                x1={200}
+                y1={90}
+                x2={200}
+                y2={150}
+                isActive={step >= 5}
+                isAnimating={step === 5 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '1.G.A.3'}
+                label="buildsTowards"
+                showArrow={true}
+              />
+              <GraphEdge
+                x1={330}
                 y1={90}
                 x2={200}
                 y2={150}
@@ -717,23 +853,37 @@ export default function KnowledgeGraphDemo() {
 
               {/* Prerequisite Nodes */}
               <GraphNode
-                x={100}
+                x={70}
                 y={65}
-                label={standardData.prerequisites.find(p => p.isRoot)?.code || standardData.prerequisites[0].code}
-                sublabel="Partitioning shapes"
+                label="2.G.A.3"
+                sublabel={selectedAnswer && step >= 5 && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '2.G.A.3'
+                  ? `LC4: Describe whole`
+                  : "Partitioning shapes"}
                 type="prerequisite"
                 isActive={step >= 5}
-                isAnimating={animatingNode === 'prereq'}
+                isAnimating={animatingNode === 'prereq' && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '2.G.A.3'}
                 onClick={() => setShowNodeDetail('prereq1')}
               />
               <GraphNode
-                x={300}
+                x={200}
                 y={65}
-                label={standardData.prerequisites.find(p => !p.isRoot)?.code || standardData.prerequisites[1]?.code}
+                label="1.G.A.3"
+                sublabel={selectedAnswer && step >= 5 && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '1.G.A.3'
+                  ? `LC4: Four fourths`
+                  : "Halves & fourths"}
+                type="prerequisite"
+                isActive={step >= 5}
+                isAnimating={animatingNode === 'prereq' && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].rootPrerequisite.code === '1.G.A.3'}
+                onClick={() => setShowNodeDetail('prereq2')}
+              />
+              <GraphNode
+                x={330}
+                y={65}
+                label="2.MD.A.2"
                 sublabel="Measurement units"
                 type="prerequisite"
                 isActive={step >= 5}
-                onClick={() => setShowNodeDetail('prereq2')}
+                onClick={() => setShowNodeDetail('prereq3')}
               />
 
               {/* Main Standard Node */}
@@ -756,7 +906,7 @@ export default function KnowledgeGraphDemo() {
                 sublabel="Unit fractions (1/b)"
                 type="component"
                 isActive={step >= 3}
-                isGap={step >= 4}
+                isGap={step >= 4 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC1'}
                 isAnimating={animatingNode === 'lc1' || animatingNode === 'lc1-gap'}
                 onClick={() => setShowNodeDetail('lc1')}
               />
@@ -767,7 +917,8 @@ export default function KnowledgeGraphDemo() {
                 sublabel="Non-unit fractions (a/b)"
                 type="component"
                 isActive={step >= 3}
-                isAnimating={animatingNode === 'lc2'}
+                isGap={step >= 4 && selectedAnswer !== null && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC2'}
+                isAnimating={animatingNode === 'lc2' || animatingNode === 'lc2-gap'}
                 onClick={() => setShowNodeDetail('lc2')}
               />
 
