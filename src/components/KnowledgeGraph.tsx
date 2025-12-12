@@ -78,36 +78,43 @@ export default function KnowledgeGraph({
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
 
   // Determine which nodes/edges are active based on step
+  // Steps: 0=Assessment, 1=Standard ID, 2=Learning Components, 3=Gap Analysis, 4=Prerequisite Trace, 5=Intervention
   const getNodeActiveState = useCallback((nodeId: string): boolean => {
-    // All nodes visible from start, but "active" based on step
+    // Step 0: All nodes fully visible to show the full graph
+    if (step === 0) return true
+
+    // After step 0, highlight based on demo progression
     switch (nodeId) {
       case 'standard':
-        return step >= 2
+        return step >= 1
       case 'lc1':
       case 'lc2':
-        return step >= 3
+        return step >= 2
       case 'prereq1':
       case 'prereq2':
       case 'prereq3':
-        return step >= 5
+        return step >= 4
       case 'future1':
       case 'future2':
-        return step >= 2
+        return step >= 1
       default:
         return false
     }
   }, [step])
 
   const getEdgeActiveState = useCallback((edgeId: string): boolean => {
-    if (edgeId.includes('prereq') && edgeId.includes('standard')) return step >= 5
-    if (edgeId.includes('lc') && edgeId.includes('standard')) return step >= 3
-    if (edgeId.includes('future')) return step >= 2
+    // Step 0: All edges fully visible
+    if (step === 0) return true
+
+    if (edgeId.includes('prereq') && edgeId.includes('standard')) return step >= 4
+    if (edgeId.includes('lc') && edgeId.includes('standard')) return step >= 2
+    if (edgeId.includes('future')) return step >= 1
     return false
   }, [step])
 
   // Check if node is the gap
   const isNodeGap = useCallback((nodeId: string): boolean => {
-    if (step < 4 || !selectedAnswer) return false
+    if (step < 3 || !selectedAnswer) return false
     const scenario = wrongAnswerScenarios[selectedAnswer]
     if (!scenario) return false
 
@@ -134,7 +141,7 @@ export default function KnowledgeGraph({
 
   // Get dynamic sublabel for prerequisites when they're the root cause
   const getPrereqSublabel = useCallback((nodeId: string, defaultSublabel: string): string => {
-    if (step >= 5 && selectedAnswer) {
+    if (step >= 4 && selectedAnswer) {
       const scenario = wrongAnswerScenarios[selectedAnswer]
       if (scenario) {
         if (nodeId === 'prereq1' && scenario.rootPrerequisite.code === '2.G.A.3') {
@@ -169,7 +176,7 @@ export default function KnowledgeGraph({
   const styledEdges = useMemo(() => {
     return layoutedEdges.map((edge) => {
       const isActive = getEdgeActiveState(edge.id)
-      const isHighlighted = step >= 5 && selectedAnswer && edge.id.includes('prereq') && edge.id.includes('standard')
+      const isHighlighted = step >= 4 && selectedAnswer && edge.id.includes('prereq') && edge.id.includes('standard')
         ? wrongAnswerScenarios[selectedAnswer]?.rootPrerequisite.code === '2.G.A.3' && edge.id.includes('prereq1')
           || wrongAnswerScenarios[selectedAnswer]?.rootPrerequisite.code === '1.G.A.3' && edge.id.includes('prereq2')
         : false

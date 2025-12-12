@@ -40,8 +40,7 @@ const standardData = {
 }
 
 const steps = [
-  { title: "Assessment Question", description: "Student encounters a fraction problem" },
-  { title: "Student Response", description: "Student provides an incorrect answer" },
+  { title: "Assessment Question", description: "Student encounters a fraction problem and responds" },
   { title: "Standard Identification", description: "System identifies the relevant standard" },
   { title: "Learning Components", description: "Standard breaks into specific skills" },
   { title: "Gap Analysis", description: "System pinpoints the specific gap" },
@@ -297,24 +296,24 @@ export default function KnowledgeGraphDemo() {
       const nextStep = step + 1
       setStep(nextStep)
 
-      // Trigger animations based on step
-      if (nextStep === 2) {
+      // Trigger animations based on step (adjusted after collapsing steps)
+      if (nextStep === 1) {
         setAnimatingNode('standard')
         setTimeout(() => setAnimatingNode(null), 1000)
-      } else if (nextStep === 3) {
+      } else if (nextStep === 2) {
         setAnimatingNode('lc1')
         setTimeout(() => {
           setAnimatingNode('lc2')
           setTimeout(() => setAnimatingNode(null), 500)
         }, 500)
-      } else if (nextStep === 4) {
+      } else if (nextStep === 3) {
         // Animate the gap LC based on selected answer
         if (selectedAnswer && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC2') {
           setAnimatingNode('lc2-gap')
         } else {
           setAnimatingNode('lc1-gap')
         }
-      } else if (nextStep === 5) {
+      } else if (nextStep === 4) {
         setAnimatingNode('prereq')
       }
     }
@@ -421,7 +420,7 @@ export default function KnowledgeGraphDemo() {
                     const isCorrectAnswer = opt === '3/4'
                     const isWrongAnswer = opt !== '3/4'
                     const isSelected = selectedAnswer === opt
-                    const canSelect = isWrongAnswer && step <= 1
+                    const canSelect = isWrongAnswer && step === 0
 
                     return (
                       <button
@@ -429,9 +428,6 @@ export default function KnowledgeGraphDemo() {
                         onClick={() => {
                           if (canSelect) {
                             setSelectedAnswer(opt as WrongAnswer)
-                            if (step === 0) {
-                              setStep(1)
-                            }
                           }
                         }}
                         disabled={!canSelect}
@@ -465,7 +461,7 @@ export default function KnowledgeGraphDemo() {
             </div>
 
             {/* AI Reasoning Panel */}
-            {step >= 2 && selectedAnswer && (
+            {step >= 1 && selectedAnswer && (
               <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 rounded-full bg-violet-500"></div>
@@ -474,7 +470,7 @@ export default function KnowledgeGraphDemo() {
                   </span>
                 </div>
                 <div className="space-y-3 text-sm">
-                  {step >= 2 && (
+                  {step >= 1 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
                       <div className="w-5 h-5 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-medium">
                         1
@@ -490,7 +486,7 @@ export default function KnowledgeGraphDemo() {
                       </div>
                     </div>
                   )}
-                  {step >= 3 && (
+                  {step >= 2 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
                       <div className="w-5 h-5 rounded bg-violet-100 text-violet-600 flex items-center justify-center text-xs font-medium">
                         2
@@ -498,17 +494,17 @@ export default function KnowledgeGraphDemo() {
                       <div>
                         <p className="text-slate-700">Breaking into learning components...</p>
                         <ul className="text-slate-400 text-xs mt-1 space-y-1">
-                          <li className={wrongAnswerScenarios[selectedAnswer].gapLC === 'LC1' ? 'text-red-400 font-medium' : ''}>
+                          <li className={step >= 3 && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC1' ? 'text-red-400 font-medium' : ''}>
                             • LC1: Identify 1/b as one part of b equal parts
                           </li>
-                          <li className={wrongAnswerScenarios[selectedAnswer].gapLC === 'LC2' ? 'text-red-400 font-medium' : ''}>
+                          <li className={step >= 3 && wrongAnswerScenarios[selectedAnswer].gapLC === 'LC2' ? 'text-red-400 font-medium' : ''}>
                             • LC2: Identify a/b as a parts of size 1/b
                           </li>
                         </ul>
                       </div>
                     </div>
                   )}
-                  {step >= 4 && (
+                  {step >= 3 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
                       <div className="w-5 h-5 rounded bg-red-100 text-red-600 flex items-center justify-center text-xs font-medium">
                         3
@@ -524,7 +520,7 @@ export default function KnowledgeGraphDemo() {
                       </div>
                     </div>
                   )}
-                  {step >= 5 && (
+                  {step >= 4 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
                       <div className="w-5 h-5 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-medium">
                         4
@@ -547,7 +543,7 @@ export default function KnowledgeGraphDemo() {
             )}
 
             {/* Follow-up Question */}
-            {step >= 6 && selectedAnswer && (
+            {step >= 5 && selectedAnswer && (
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200 shadow-sm animate-fadeIn">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -571,7 +567,7 @@ export default function KnowledgeGraphDemo() {
             )}
 
             {/* Contrast Box */}
-            {step >= 6 && selectedAnswer && (
+            {step >= 5 && selectedAnswer && (
               <div className="bg-slate-100 rounded-xl p-4 border border-slate-200">
                 <p className="text-sm text-slate-500 mb-2">Compare: Without knowledge graph</p>
                 <div className="bg-white rounded p-3 text-sm text-slate-500 border border-slate-200">
@@ -655,9 +651,9 @@ export default function KnowledgeGraphDemo() {
           </button>
           <button
             onClick={advanceStep}
-            disabled={step >= steps.length - 1}
+            disabled={step >= steps.length - 1 || (step === 0 && !selectedAnswer)}
             className={`px-6 py-2 rounded-lg transition-colors ${
-              step >= steps.length - 1
+              step >= steps.length - 1 || (step === 0 && !selectedAnswer)
                 ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-md'
             }`}
