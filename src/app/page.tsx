@@ -83,11 +83,11 @@ const GraphNode: React.FC<GraphNodeProps> = ({
   onClick
 }) => {
   const colors = {
-    standard: { bg: '#3b82f6', border: '#1d4ed8' },
-    component: { bg: '#8b5cf6', border: '#6d28d9' },
-    prerequisite: { bg: '#f59e0b', border: '#d97706' },
-    future: { bg: '#10b981', border: '#059669' },
-    gap: { bg: '#ef4444', border: '#dc2626' }
+    standard: { bg: '#6366f1', border: '#4f46e5' },
+    component: { bg: '#a78bfa', border: '#8b5cf6' },
+    prerequisite: { bg: '#fbbf24', border: '#f59e0b' },
+    future: { bg: '#34d399', border: '#10b981' },
+    gap: { bg: '#f87171', border: '#ef4444' }
   }
 
   const color = isGap ? colors.gap : colors[type]
@@ -158,7 +158,7 @@ const GraphEdge: React.FC<GraphEdgeProps> = ({
     y1={y1}
     x2={x2}
     y2={y2}
-    stroke={isAnimating ? '#ef4444' : '#64748b'}
+    stroke={isAnimating ? '#f87171' : '#cbd5e1'}
     strokeWidth={isAnimating ? 3 : 2}
     opacity={isActive ? 0.8 : 0.2}
     strokeDasharray={isAnimating ? '5,5' : 'none'}
@@ -237,13 +237,13 @@ export default function KnowledgeGraphDemo() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 p-6">
       {/* Header */}
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2">Knowledge Graphs in Action</h1>
-          <p className="text-slate-400">How structured knowledge enables intelligent diagnosis</p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-slate-500">How structured knowledge enables intelligent diagnosis</p>
+          <p className="text-xs text-slate-400 mt-1">
             Powered by CZI Learning Commons Knowledge Graph
           </p>
         </div>
@@ -255,10 +255,10 @@ export default function KnowledgeGraphDemo() {
               key={i}
               className={`px-3 py-1 rounded-full text-xs transition-all ${
                 i === step
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-indigo-500 text-white shadow-md'
                   : i < step
-                  ? 'bg-blue-900 text-blue-300'
-                  : 'bg-slate-700 text-slate-500'
+                  ? 'bg-indigo-100 text-indigo-600'
+                  : 'bg-slate-200 text-slate-400'
               }`}
             >
               {i + 1}. {s.title}
@@ -271,20 +271,20 @@ export default function KnowledgeGraphDemo() {
           {/* Left Panel: Assessment */}
           <div className="space-y-4">
             {/* Question Card */}
-            <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                <span className="text-sm font-medium text-slate-400">Assessment Question</span>
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <span className="text-sm font-medium text-slate-500">Assessment Question</span>
               </div>
-              <div className="bg-slate-900 rounded-lg p-4">
+              <div className="bg-slate-50 rounded-lg p-4">
                 <p className="text-lg mb-4">Look at the shape below. What fraction is shaded?</p>
                 <div className="flex justify-center mb-4">
                   <svg width="200" height="60" viewBox="0 0 200 60">
                     {/* Rectangle divided into 4 parts, 3 shaded */}
-                    <rect x="10" y="10" width="40" height="40" fill="#3b82f6" stroke="#1e40af" strokeWidth="2" />
-                    <rect x="55" y="10" width="40" height="40" fill="#3b82f6" stroke="#1e40af" strokeWidth="2" />
-                    <rect x="100" y="10" width="40" height="40" fill="#3b82f6" stroke="#1e40af" strokeWidth="2" />
-                    <rect x="145" y="10" width="40" height="40" fill="transparent" stroke="#1e40af" strokeWidth="2" />
+                    <rect x="10" y="10" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+                    <rect x="55" y="10" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+                    <rect x="100" y="10" width="40" height="40" fill="#818cf8" stroke="#6366f1" strokeWidth="2" />
+                    <rect x="145" y="10" width="40" height="40" fill="transparent" stroke="#6366f1" strokeWidth="2" />
                   </svg>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
@@ -293,13 +293,13 @@ export default function KnowledgeGraphDemo() {
                       key={opt}
                       className={`p-2 rounded text-center text-sm ${
                         opt === '3'
-                          ? 'bg-red-900/50 border-2 border-red-500'
-                          : 'bg-slate-800 border border-slate-600'
+                          ? 'bg-red-50 border-2 border-red-400 text-red-700'
+                          : 'bg-white border border-slate-300 text-slate-600'
                       }`}
                     >
                       {opt}
                       {opt === '3' && step >= 1 && (
-                        <div className="text-xs text-red-400 mt-1">Student&apos;s answer</div>
+                        <div className="text-xs text-red-500 mt-1">Student&apos;s answer</div>
                       )}
                     </div>
                   ))}
@@ -309,25 +309,25 @@ export default function KnowledgeGraphDemo() {
 
             {/* AI Reasoning Panel */}
             {step >= 2 && (
-              <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+              <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                  <span className="text-sm font-medium text-slate-400">
+                  <div className="w-2 h-2 rounded-full bg-violet-500"></div>
+                  <span className="text-sm font-medium text-slate-500">
                     AI Reasoning (using Knowledge Graph)
                   </span>
                 </div>
                 <div className="space-y-3 text-sm">
                   {step >= 2 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
-                      <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center text-xs">
+                      <div className="w-5 h-5 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-medium">
                         1
                       </div>
                       <div>
-                        <p className="text-slate-300">
+                        <p className="text-slate-700">
                           Standard identified:{' '}
-                          <span className="text-blue-400 font-mono">3.NF.A.1</span>
+                          <span className="text-indigo-600 font-mono">3.NF.A.1</span>
                         </p>
-                        <p className="text-slate-500 text-xs mt-1">
+                        <p className="text-slate-400 text-xs mt-1">
                           Understanding fractions as parts of a whole
                         </p>
                       </div>
@@ -335,12 +335,12 @@ export default function KnowledgeGraphDemo() {
                   )}
                   {step >= 3 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
-                      <div className="w-5 h-5 rounded bg-purple-500/20 flex items-center justify-center text-xs">
+                      <div className="w-5 h-5 rounded bg-violet-100 text-violet-600 flex items-center justify-center text-xs font-medium">
                         2
                       </div>
                       <div>
-                        <p className="text-slate-300">Breaking into learning components...</p>
-                        <ul className="text-slate-500 text-xs mt-1 space-y-1">
+                        <p className="text-slate-700">Breaking into learning components...</p>
+                        <ul className="text-slate-400 text-xs mt-1 space-y-1">
                           <li>• LC1: Identify 1/b as one part of b equal parts</li>
                           <li>• LC2: Identify a/b as a parts of size 1/b</li>
                         </ul>
@@ -349,15 +349,15 @@ export default function KnowledgeGraphDemo() {
                   )}
                   {step >= 4 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
-                      <div className="w-5 h-5 rounded bg-red-500/20 flex items-center justify-center text-xs">
+                      <div className="w-5 h-5 rounded bg-red-100 text-red-600 flex items-center justify-center text-xs font-medium">
                         3
                       </div>
                       <div>
-                        <p className="text-slate-300">
+                        <p className="text-slate-700">
                           Gap identified:{' '}
-                          <span className="text-red-400">LC1 - Understanding unit fractions</span>
+                          <span className="text-red-500">LC1 - Understanding unit fractions</span>
                         </p>
-                        <p className="text-slate-500 text-xs mt-1">
+                        <p className="text-slate-400 text-xs mt-1">
                           Student counted shaded parts (3) but didn&apos;t express as fraction of whole
                         </p>
                       </div>
@@ -365,15 +365,15 @@ export default function KnowledgeGraphDemo() {
                   )}
                   {step >= 5 && (
                     <div className="flex gap-3 items-start animate-fadeIn">
-                      <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center text-xs">
+                      <div className="w-5 h-5 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-xs font-medium">
                         4
                       </div>
                       <div>
-                        <p className="text-slate-300">
+                        <p className="text-slate-700">
                           Root prerequisite:{' '}
-                          <span className="text-amber-400 font-mono">2.G.A.3</span>
+                          <span className="text-amber-600 font-mono">2.G.A.3</span>
                         </p>
-                        <p className="text-slate-500 text-xs mt-1">
+                        <p className="text-slate-400 text-xs mt-1">
                           Partitioning shapes into equal shares and using fraction language
                         </p>
                       </div>
@@ -385,15 +385,15 @@ export default function KnowledgeGraphDemo() {
 
             {/* Follow-up Question */}
             {step >= 6 && (
-              <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 rounded-xl p-5 border border-green-700 animate-fadeIn">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200 shadow-sm animate-fadeIn">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-sm font-medium text-green-400">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <span className="text-sm font-medium text-emerald-600">
                     Targeted Follow-up (addresses root gap)
                   </span>
                 </div>
-                <div className="bg-slate-900/50 rounded-lg p-4">
-                  <p className="text-lg mb-3">Let&apos;s think about this rectangle together.</p>
+                <div className="bg-white/70 rounded-lg p-4">
+                  <p className="text-lg mb-3 text-slate-700">Let&apos;s think about this rectangle together.</p>
                   <div className="flex justify-center mb-3">
                     <svg width="200" height="60" viewBox="0 0 200 60">
                       <rect
@@ -402,7 +402,7 @@ export default function KnowledgeGraphDemo() {
                         width="180"
                         height="40"
                         fill="transparent"
-                        stroke="#10b981"
+                        stroke="#34d399"
                         strokeWidth="2"
                       />
                       <line
@@ -410,7 +410,7 @@ export default function KnowledgeGraphDemo() {
                         y1="10"
                         x2="55"
                         y2="50"
-                        stroke="#10b981"
+                        stroke="#34d399"
                         strokeWidth="2"
                         strokeDasharray="4,2"
                       />
@@ -419,7 +419,7 @@ export default function KnowledgeGraphDemo() {
                         y1="10"
                         x2="100"
                         y2="50"
-                        stroke="#10b981"
+                        stroke="#34d399"
                         strokeWidth="2"
                         strokeDasharray="4,2"
                       />
@@ -428,17 +428,17 @@ export default function KnowledgeGraphDemo() {
                         y1="10"
                         x2="145"
                         y2="50"
-                        stroke="#10b981"
+                        stroke="#34d399"
                         strokeWidth="2"
                         strokeDasharray="4,2"
                       />
                     </svg>
                   </div>
-                  <p className="text-slate-300 mb-2">This rectangle is divided into equal parts.</p>
-                  <p className="text-green-300 font-medium">
+                  <p className="text-slate-600 mb-2">This rectangle is divided into equal parts.</p>
+                  <p className="text-emerald-600 font-medium">
                     How many equal parts make up the whole rectangle?
                   </p>
-                  <p className="text-slate-500 text-xs mt-3 italic">
+                  <p className="text-slate-400 text-xs mt-3 italic">
                     This question targets the prerequisite understanding: seeing the whole as
                     composed of equal parts before naming the fraction.
                   </p>
@@ -448,13 +448,13 @@ export default function KnowledgeGraphDemo() {
 
             {/* Contrast Box */}
             {step >= 6 && (
-              <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-                <p className="text-sm text-slate-400 mb-2">Compare: Without knowledge graph</p>
-                <div className="bg-slate-900/50 rounded p-3 text-sm text-slate-500">
+              <div className="bg-slate-100 rounded-xl p-4 border border-slate-200">
+                <p className="text-sm text-slate-500 mb-2">Compare: Without knowledge graph</p>
+                <div className="bg-white rounded p-3 text-sm text-slate-500 border border-slate-200">
                   &quot;That&apos;s incorrect. The answer is 3/4. Remember, a fraction shows parts of a
                   whole. 3 parts are shaded out of 4 total parts, so the fraction is 3/4.&quot;
                 </div>
-                <p className="text-xs text-slate-600 mt-2 italic">
+                <p className="text-xs text-slate-400 mt-2 italic">
                   Generic re-explanation doesn&apos;t address why the student answered &quot;3&quot; instead of
                   &quot;3/4&quot;
                 </p>
@@ -463,10 +463,10 @@ export default function KnowledgeGraphDemo() {
           </div>
 
           {/* Right Panel: Knowledge Graph Visualization */}
-          <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span className="text-sm font-medium text-slate-400">Knowledge Graph View</span>
+              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+              <span className="text-sm font-medium text-slate-500">Knowledge Graph View</span>
             </div>
 
             <svg viewBox="0 0 400 380" className="w-full h-auto">
@@ -575,24 +575,24 @@ export default function KnowledgeGraphDemo() {
 
               {/* Legend */}
               <g transform="translate(10, 380)">
-                <rect x="0" y="-15" width="12" height="12" rx="2" fill="#f59e0b" />
-                <text x="18" y="-5" fill="#94a3b8" fontSize="9">
+                <rect x="0" y="-15" width="12" height="12" rx="2" fill="#fbbf24" />
+                <text x="18" y="-5" fill="#64748b" fontSize="9">
                   Prerequisites
                 </text>
-                <rect x="85" y="-15" width="12" height="12" rx="2" fill="#3b82f6" />
-                <text x="103" y="-5" fill="#94a3b8" fontSize="9">
+                <rect x="85" y="-15" width="12" height="12" rx="2" fill="#6366f1" />
+                <text x="103" y="-5" fill="#64748b" fontSize="9">
                   Standard
                 </text>
-                <rect x="155" y="-15" width="12" height="12" rx="2" fill="#8b5cf6" />
-                <text x="173" y="-5" fill="#94a3b8" fontSize="9">
+                <rect x="155" y="-15" width="12" height="12" rx="2" fill="#a78bfa" />
+                <text x="173" y="-5" fill="#64748b" fontSize="9">
                   Components
                 </text>
-                <rect x="245" y="-15" width="12" height="12" rx="2" fill="#ef4444" />
-                <text x="263" y="-5" fill="#94a3b8" fontSize="9">
+                <rect x="245" y="-15" width="12" height="12" rx="2" fill="#f87171" />
+                <text x="263" y="-5" fill="#64748b" fontSize="9">
                   Gap
                 </text>
-                <rect x="295" y="-15" width="12" height="12" rx="2" fill="#10b981" />
-                <text x="313" y="-5" fill="#94a3b8" fontSize="9">
+                <rect x="295" y="-15" width="12" height="12" rx="2" fill="#34d399" />
+                <text x="313" y="-5" fill="#64748b" fontSize="9">
                   Builds to
                 </text>
               </g>
@@ -600,9 +600,9 @@ export default function KnowledgeGraphDemo() {
 
             {/* Selected Node Details */}
             {selectedNode && (
-              <div className="mt-4 p-3 bg-slate-900 rounded-lg text-sm">
-                <p className="text-slate-400 mb-1">{getNodeDescription(selectedNode).title}</p>
-                <p className="text-slate-300">{getNodeDescription(selectedNode).description}</p>
+              <div className="mt-4 p-3 bg-slate-50 rounded-lg text-sm border border-slate-200">
+                <p className="text-slate-500 mb-1">{getNodeDescription(selectedNode).title}</p>
+                <p className="text-slate-700">{getNodeDescription(selectedNode).description}</p>
               </div>
             )}
           </div>
@@ -612,7 +612,7 @@ export default function KnowledgeGraphDemo() {
         <div className="flex justify-center gap-4 mt-6">
           <button
             onClick={reset}
-            className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+            className="px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors"
           >
             Reset Demo
           </button>
@@ -621,8 +621,8 @@ export default function KnowledgeGraphDemo() {
             disabled={step >= steps.length - 1}
             className={`px-6 py-2 rounded-lg transition-colors ${
               step >= steps.length - 1
-                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-400'
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-md'
             }`}
           >
             {step >= steps.length - 1 ? 'Demo Complete' : 'Next Step →'}
@@ -630,9 +630,9 @@ export default function KnowledgeGraphDemo() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-slate-500 text-sm">
+        <div className="text-center mt-8 text-slate-400 text-sm">
           <p>This demo uses real data from the CZI Learning Commons Knowledge Graph</p>
-          <p className="text-xs mt-1">
+          <p className="text-xs mt-1 text-slate-400">
             Standards, learning components, and progressions are from the Common Core State
             Standards for Mathematics
           </p>
